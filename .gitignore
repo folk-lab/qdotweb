@@ -4,5 +4,6 @@
 
 # python junk
 
+*.ipynb_checkpoints
 *.pyc
 *.egg-info
