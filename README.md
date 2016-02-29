@@ -10,7 +10,7 @@ The requirements are fairly loose; the number of instruments is relatively small
 
 
 1. Clients can write instrument control software in any language with access to HTTP. 
-2. Multiple clients can access the same hardware with out conflict over which client controls the resource.
+2. Multiple clients can access the same hardware without conflict over which client controls the resource.
 3. Multiple requests can be sent asyncronously on the client side to speed up data collection. 
 
 ### What works:
