@@ -24,8 +24,7 @@ app = Flask(__name__)
 ### basic instrument information ###
 
 rm = visa.ResourceManager()
-instruments = []
-instruments_address = []
+instruments = {}
 
 def format_resources_table(reslist):
     """ put instruments list into HTML table """
@@ -42,13 +41,13 @@ def main():
     global hostname
     global rm
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    resources = ['_'.join(r.split('::')) for r in rm.list_resources()]
+    resources = rm.list_resources()
     resource_table = format_resources_table(resources)
     return render_template('index.html', hostname = hostname, 
                            resource_table = resource_table, current_time = current_time)
                            
 def check_idn(resources):
-
+    """ get the *IDN? response from any instruments that have it """
     ids = []
     errors = []
     for addr in resources:
@@ -87,17 +86,11 @@ def available_instruments():
 @app.route("/connected_instruments")
 def list_connected_instruments():
     global instruments
-    global instruments_address
+    instruments_address = list(instruments.keys())
     output = OrderedDict([('instruments', instruments_address)])
     return json.dumps(output)
     
 ### control of individual instruments ###
-
-def inst(address):
-    global instruments
-    global instruments_address
-    idx = instruments_address.index(address)
-    return instruments[idx]
 
 # rules: urls should always return something. 
 #        if an error occurs, leave data blank, catch the error, return some information
@@ -110,22 +103,21 @@ def connect_instrument():
         instruments/instruments_address arrays """
     global rm
     global instruments
-    global instruments_address
 
     data = ''
     errors = ''
+    address = ''
     if request.method == 'POST':
         post = request.form
-        if post['address']:
+        if 'address' in post:
             address = post['address']
         else:  
             raise ValueError('You did not send an address')
         try:
-            if address in instruments_address:
+            if address in instruments:
                 pass
             else:
-                instruments.append(rm.open_resource(address))
-                instruments_address.append(address)
+                instruments[address] = rm.open_resource(address)
         except Exception as e:
             errors = str(e)
         data = 'CONNECTED'
@@ -137,8 +129,7 @@ def connect_instrument():
 def instrument_write(address, command):
     """ write to instrument """
     global instruments
-    global instruments_address
-    inst(address).write(command)
+    instruments[address].write(command)
 
 @app.route("/write", methods=['POST', 'GET'])
 def write():
@@ -169,8 +160,7 @@ def write():
 def instrument_read(address):
     """ read from instrument """
     global instruments
-    global instruments_address
-    data = inst(address).read(command)
+    data = instruments[address].read(command)
     return data
 
 @app.route("/read", methods=['POST', 'GET'])
@@ -197,8 +187,7 @@ def read():
 def instrument_query(address, command):
     """ query instrument """
     global instruments
-    global instruments_address
-    data = inst(address).query(command)
+    data = instruments[address].query(command)
     return data
     
 @app.route("/query", methods=['POST', 'GET'])
@@ -228,25 +217,22 @@ def query():
 
 @app.route("/close", methods=['POST', 'GET'])
 def close_instrument():
-    global rm
     global instruments
-    global instruments_address
 
     data = ''
     errors = ''
+    address = ''
     if request.method == 'POST':
         post = request.form
-        if post['address']:
+        if 'address' in post:
             address = post['address']
         else:  
             raise ValueError('You did not send an address')
         try:
-            if address not in instruments_address:
+            if address not in instruments:
                 pass
             else:
-                idx = instruments_address.index(address)
-                del instruments[idx]
-                del instruments_address[idx]
+                del instruments[address]
         except Exception as e:
             errors = str(e)
         data = 'CLOSED'
