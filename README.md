@@ -1,6 +1,6 @@
 # qdotweb
 
-At it's core, qdotweb is a Flask wrapper for the PyVISA communication package. 
+At its core, qdotweb is a Flask wrapper for the PyVISA communication package. 
 
 The goal is to build a system where all instrument control is done via HTTP methods. 
 
