@@ -21,7 +21,7 @@ def unique():
     return str(int(_uniquefloat() * 1000))
 
 from os import rename
-
+x
 if not platform.isWindows():
     from os import kill
     from os import symlink
@@ -236,3 +236,4 @@ def isLocked(name):
 
 
 __all__ = ['FilesystemLock', 'isLocked']
+\
