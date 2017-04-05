@@ -23,7 +23,7 @@ app = Flask(__name__)
 
 ### basic instrument information ###
 
-rm = visa.ResourceManager()
+rm = visa.ResourceManager('@py')
 instruments = {}
 
 def format_resources_table(reslist):
@@ -56,7 +56,7 @@ def check_idn(resources):
         try:
             ctrl = rm.open_resource(addr)
             ctrl.timeout = 500
-            id = ctrl.query('*IND?')
+            id = ctrl.query('*IDN?')
             ctrl.close()
         except Exception as e:
             error = str(e)
@@ -245,4 +245,4 @@ def close_instrument():
 ### run with Flask development server ###
     
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0')
